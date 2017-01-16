@@ -23,7 +23,6 @@ create table if not exists students (
     qqnumber varchar(64),
     wxnumber varchar(64));
 
-
 create table if not exists studentclassrelations (
     studentid integer not null,
     classid integer not null,
@@ -45,7 +44,7 @@ create table if not exists questions (
     operand1 tinyint,
     operand2 tinyint,
     operand3 tinyint,
-    primary key (paperid, sequence));
+    primary key (paperid, sequence)) engine=myisam;
 
 create table if not exists answersheets (
     sheetid integer primary key auto_increment,
@@ -63,14 +62,4 @@ create table if not exists answers (
     operand3 tinyint,
     answer smallint,
     duration smallint,
-    primary key (sheetid, sequence));
-
-create table if not exists myanswers (
-    sheetid integer not null,
-    sequence smallint not null,
-    qtype tinyint,
-    operand1 tinyint,
-    operand2 tinyint,
-    operand3 tinyint,
-    answer smallint,
-    duration smallint) engine=myisam;
+    primary key (sheetid, sequence)) engine=myisam;
