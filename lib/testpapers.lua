@@ -1,7 +1,87 @@
 local _M = {}
 
-function _M.GET()
+local function getdb()
+    local mysql = require "resty.mysql"
+    local db, err = mysql:new()
+    if not db then
+        ngx.log(ngx.ERR, "failed to instantiate mysql: ", err)
+        return
+    end
 
+    db:set_timeout(1000) -- 1 sec
+
+    local result, err, errcode, sqlstate = db:connect{
+        host = "127.0.0.1",
+        port = 3306,
+        database = "kousuan",
+        user = "kousuan",
+        password = "kousuan",
+        max_packet_size = 1024 * 1024 }
+
+    if not result then
+        ngx.log(ngx.ERR, "failed to connect: ", err, ": ", errcode, " ", sqlstate)
+        return
+    end
+
+    return db
+end
+
+local function releasedb(db)
+    -- put it into the connection pool of size 100,
+    -- with 10 seconds max idle timeout
+    local ok, err = db:set_keepalive(10000, 100)
+    if not ok then
+        ngx.log(ngx.ERR, "failed to set keepalive: ", err)
+        return
+    end
+    return true
+end
+
+
+-- join a2 to a1
+local function ajoin(a1, a2)
+    local insert = table.insert
+    for _, v in ipairs(a2) do
+        insert(a1, v)
+    end
+end    
+
+-- GET /testpapers
+function _M.GET()
+    local auth = require 'lib.auth'
+
+    if not auth.pass() then
+        return ngx.exit(401)
+    end
+
+    local uid = auth.uid()
+
+    local db = getdb()
+    if not db then return end
+
+    local result, err, errcode, sqlstate =
+        db:query("select paperid, name, description, create_time, question_number, duration from testpapers "
+                 " where creatorid = " .. uid)
+    if not result then
+        ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        return
+    end
+
+    local final = result
+
+    while err == 'again' do
+        result, err, errcode, sqlstate = db:read_result()
+        if not result then
+            ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+            return
+        end
+        ajoin(final, result)
+    end
+
+    local js = require 'cjson'
+    ngx.say(js.encode(final))
+
+    releasedb(db)
 end
 
 -- POST /testpapers
@@ -14,60 +94,50 @@ end
 --   "duration": 300
 -- }
 local function storepaper(name, desc, myid, duration, paper)
-    local mysql = require "resty.mysql"
-    local db, err = mysql:new()
-    if not db then
-        ngx.log(ngx.ERR, "failed to instantiate mysql: ", err)
-        return
-    end
 
-    db:set_timeout(1000) -- 1 sec
+    name = ngx.quote_sql_str(name)
+    desc = ngx.quote_sql_str(desc or '')
+    duration = ngx.quote_sql_str(tostring(duration or 0))
 
-    local ok, err, errcode, sqlstate = db:connect{
-        host = "127.0.0.1",
-        port = 3306,
-        database = "kousuan",
-        user = "kousuan",
-        password = "kousuan",
-        max_packet_size = 1024 * 1024 }
-
-    if not ok then
-        ngx.log(ngx.ERR, "failed to connect: ", err, ": ", errcode, " ", sqlstate)
-        return
-    end
+    local db = getdb()
+    if not db then return end
 
     ngx.print("connected to mysql.")
 
-    ok, err, errcode, sqlstate =
-        db:query("insert into cats (name) "
-                 .. "values (\'Bob\'),(\'\'),(null)")
-    if not ok then
+    local result, err, errcode, sqlstate =
+        db:query("insert into testpapers (name, description, creatorid, question_number, duration) "
+                 .. "values ('"..name.."', '"..desc.."', "..myid..", "..#paper..", "..duration..")")
+    if not result then
         ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
         return
     end
 
-    ngx.say(res.affected_rows, " rows inserted into table cats ",
-            "(last insert id: ", res.insert_id, ")")
-
-    -- run a select query, expected about 10 rows in
-    -- the result set:
-    ok, err, errcode, sqlstate =
-        db:query("select * from cats order by id asc", 10)
-    if not ok then
-        ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
-        return
+    local paperid = result.insert_id
+    local qs = {}
+    for i=1, #paper do
+        local question = paper[i]
+        local n = question
+        local operand3 = n % 256
+        n = math.floor(n/256)
+        local operand2 = n % 256
+        n = math.floor(n/256)
+        local operand1 = n % 256
+        n = math.floor(n/256)
+        local qtype = n
+        local q = {paperid, i, qtype, operand1, operand2, operand3, question}
+        table.insert(qs, '('..table.concat(q, ', ')..')')
     end
 
-    local cjson = require "cjson"
-    ngx.print("result: ", cjson.encode(res))
-
-    -- put it into the connection pool of size 100,
-    -- with 10 seconds max idle timeout
-    local ok, err = db:set_keepalive(10000, 100)
-    if not ok then
-        ngx.log(ngx.ERR, "failed to set keepalive: ", err)
-        return
+    result, err, errcode, sqlstate = 
+        db:query("insert into questions (paperid, sequence, qtype, operand1, operand2, operand3, question) "
+                 .. "values " .. table.concat(qs, ', '))
+    if not result then
+        ngx.log(ngx.ERR, "band result: ", err, ": ", errcode, ": ", sqlstate, ".")
     end
+
+    ngx.exit(200)
+
+    releasedb(db)
 end
 
 function _M.POST()

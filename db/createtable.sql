@@ -33,7 +33,7 @@ create table if not exists testpapers (
     name varchar(256),
     description varchar(1024),
     creatorid integer,
-    create_time timestamp,
+    create_time timestamp default current_timestamp,
     question_number integer,
     duration integer);
 
@@ -44,13 +44,14 @@ create table if not exists questions (
     operand1 tinyint,
     operand2 tinyint,
     operand3 tinyint,
+    question integer,
     primary key (paperid, sequence)) engine=myisam;
 
 create table if not exists answersheets (
     sheetid integer primary key auto_increment,
     paperid integer,
     studentid integer,
-    submit_time timestamp,
+    submit_time timestamp default current_timestamp,
     duration integer);
 
 create table if not exists answers (
