@@ -29,7 +29,7 @@ end
 -- class = 1: 操作数被除以10的两操作数运算
 -- calss = 2: 三操作数运算
 local function say(fd, class, ...)
-    insert(data[fd], concat(map({fd+class*64,...}, hex), ''))
+    insert(data[fd], '0x'..concat(map({fd+class*64,...}, hex), ''))
 end
 
 local function shuffle(arr)
@@ -47,22 +47,22 @@ end
 for i = 0, 20 do
     for j = 0, 20 do
         -- 1. addition within 10
-        if i+j<=10 then say(1, 0, i, j) end
+        if i+j<=10 then say(1, 0, i, j, 0) end
 
         -- 2. subtraction within 10
-        if i<=10 and i-j>=0 then say(2, 0, i, j) end
+        if i<=10 and i-j>=0 then say(2, 0, i, j, 0) end
 
         -- 3. carry-save addition within 20
-        if (i>=10 or j>=10) and i+j<=20 then say(3, 0, i, j) end
+        if (i>=10 or j>=10) and i+j<=20 then say(3, 0, i, j, 0) end
 
         -- 4. subtraction without abdication within 20
-        if i>=10 and i-j>=0 and i%10>=j%10 then say(4, 0, i, j) end
+        if i>=10 and i-j>=0 and i%10>=j%10 then say(4, 0, i, j, 0) end
 
         -- 5. addition with carry within 20
-        if i<10 and j<10 and i+j>10 then say(5, 0, i, j) end
+        if i<10 and j<10 and i+j>10 then say(5, 0, i, j, 0) end
 
         -- 6. subtraction with abdication within 20
-        if i-j>0 and i%10<j%10 then say(6, 0, i, j) end
+        if i-j>0 and i%10<j%10 then say(6, 0, i, j, 0) end
 
         -- 7-14 3 operands
         for k=0,20 do
@@ -97,42 +97,42 @@ end
 for i=20,100 do
     for j=0,100,10 do
         -- 15. carry-save addition of whole 10 within 100
-        if i+j<=100 then say(15, 0, i, j); say(15, 0, j, i) end
+        if i+j<=100 then say(15, 0, i, j, 0); say(15, 0, j, i, 0) end
 
         -- 16. subtraction without abdication of whole 10 within 100
-        if i-j>=0 then say(16, 0, i, j) end
+        if i-j>=0 then say(16, 0, i, j, 0) end
     end 
 end
 
 for i=10,100 do
     for j=0,10-1 do
         -- 17. carry-save addition of single digit within 100
-        if i+j<=100 and i%10+j<10 then say(17,0,i,j); say(17,0,j,i) end
+        if i+j<=100 and i%10+j<10 then say(17,0,i,j,0); say(17,0,j,i,0) end
 
         -- 18. subtraction without abdication of single digit within 100
-        if i-j>=0 and i%10>=j then say(18,0,i,j) end
+        if i-j>=0 and i%10>=j then say(18,0,i,j,0) end
 
         -- 19. addition with carry of single digit within 100
-        if i+j<=100 and i%10+j>=10 then say(19,0,i,j) end
+        if i+j<=100 and i%10+j>=10 then say(19,0,i,j,0) end
 
         -- 20. subtraction with abdication of single digit within 100
-        if i-j>=0 and i%10<j then say(20,0,i,j) end
+        if i-j>=0 and i%10<j then say(20,0,i,j,0) end
     end
 end
 
 for i=10,100-1 do
     for j=10,100-1 do
         -- 21. carry-save addition of double-digit within 100
-        if i+j<=100 and i%10+j%10<10 then say(21,0,i,j) end
+        if i+j<=100 and i%10+j%10<10 then say(21,0,i,j,0) end
 
         -- 22. subtraction without abdication of double-digit within 100
-        if i-j>=0 and i%10>=j%10 then say(22,0,i,j) end
+        if i-j>=0 and i%10>=j%10 then say(22,0,i,j,0) end
 
         -- 23. addition with carry of double-digit within 100
-        if i+j<=100 and i%10+j%10>=10 then say(23,0,i,j) end
+        if i+j<=100 and i%10+j%10>=10 then say(23,0,i,j,0) end
 
         -- 24. subtraction without abdication of double-digit within 100
-        if i-j>=0 and i%10<j%10 then say(24,0,i,j) end
+        if i-j>=0 and i%10<j%10 then say(24,0,i,j,0) end
     end 
 end
 
@@ -159,10 +159,10 @@ end
 for i=0,10-1 do
     for j=0,10-1 do
         -- 27. multiplication within table
-        say(27,0,i,j)
+        say(27,0,i,j,0)
 
         -- 28. division within table
-        if i~=0 then say(28,0,i*j,i) end
+        if i~=0 then say(28,0,i*j,i,0) end
 
         -- from 29 to 47, there are 3 operands
         for k=0,10-1 do
@@ -245,26 +245,26 @@ end
 for i=100,1000-100,100 do
     for j=100,1000-100,100 do
         -- 48. addition of whole 100
-        if i+j<=1000 then say(48,1,floor(i/10),floor(j/10)) end
+        if i+j<=1000 then say(48,1,floor(i/10),floor(j/10),0) end
 
         -- 49. subtraction of whole 100
-        if i>=j then say(49,1,floor(i/10),floor(j/10)) end
+        if i>=j then say(49,1,floor(i/10),floor(j/10),0) end
     end
 end
 
 for i=10,1000-10,10 do
     for j=10,1000-10,10 do
         -- 50. carry-save addition of whole 100 and whole 10
-        if i+j<=1000 and i%100+j%100<100 then say(50,1,floor(i/10),floor(j/10)) end
+        if i+j<=1000 and i%100+j%100<100 then say(50,1,floor(i/10),floor(j/10),0) end
 
         -- 51. addition with carry of whole 100 and whole 10
-        if i+j<=1000 and i%100+j%100>=100 then say(51,1,floor(i/10),floor(j/10)) end
+        if i+j<=1000 and i%100+j%100>=100 then say(51,1,floor(i/10),floor(j/10),0) end
 
         -- 52. subtraction without abdication of whole 100 and whole 10
-        if i>=j and i%100>=j%100 then say(52,1,floor(i/10),floor(j/10)) end
+        if i>=j and i%100>=j%100 then say(52,1,floor(i/10),floor(j/10),0) end
 
         -- 53. subtraction with abdication of whole 100 and whole 10
-        if i>=j and i%100<j%100 then say(53,1,floor(i/10),floor(j/10)) end
+        if i>=j and i%100<j%100 then say(53,1,floor(i/10),floor(j/10),0) end
     end
 end
 

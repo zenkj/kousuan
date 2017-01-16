@@ -50,7 +50,8 @@ public class Main {
                 reader = new BufferedReader(new InputStreamReader((new FileInputStream(path+i+".txt"))));
                 String line = null;
                 while((line = reader.readLine()) != null) {
-                    list.add(hex(line));
+                    //list.add(hex(line));
+                    list.add(Integer.parseInt(line));
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

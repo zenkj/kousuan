@@ -1,5 +1,5 @@
 -- for test
---local ngx = {['config'] = {['prefix'] = '/home/wecloud/openresty/projects/kousuan'}}
+local ngx = {['config'] = {['prefix'] = '/home/wecloud/openresty/projects/kousuan'}}
 --local time = os.time
 --local clock = os.clock
 --local difftime = os.difftime
@@ -79,8 +79,7 @@ local qdir = ngx.config.prefix .. '/data/q/'
 for i=1,53 do
     questions[i] = {}
     for line in lines(qdir .. i .. '.txt') do
-        local v = hex(line)
-        insert(questions[i], v)
+        insert(questions[i], tonumber(line))
     end
 end
 --log 'finish to load questions.'
