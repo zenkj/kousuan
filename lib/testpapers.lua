@@ -140,6 +140,29 @@ local function storepaper(name, desc, myid, duration, paper)
     releasedb(db)
 end
 
+local function updatepaper(pid, name, desc, duration)
+
+    name = ngx.quote_sql_str(name)
+    desc = ngx.quote_sql_str(desc or '')
+    duration = ngx.quote_sql_str(tostring(duration or 0))
+
+    local db = getdb()
+    if not db then return end
+
+    local result, err, errcode, sqlstate =
+        db:query("update testpapers set name = '"..name.."', description = '"..desc.."', duration = "..duration
+                 .." where paperid = "..pid) 
+    if not result then
+        ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        releasedb(db)
+        return ngx.exit(500)
+    end
+
+    ngx.exit(200)
+
+    releasedb(db)
+end
+
 function _M.POST()
     local auth = require 'lib.auth'
 
@@ -187,12 +210,122 @@ function _M.POST()
     return ngx.exit(200)
 end
 
-function _M.PUT()
+local _S = {}
+
+_M.single = _S
+
+function _S.GET()
+    local auth = require 'lib.auth'
+
+    if not auth.pass() then
+        return ngx.exit(401)
+    end
+
+    local uid = auth.uid()
+
+    local db = getdb()
+    if not db then return end
+
+    local pid = tonumber(ngx.var[1])
+
+    local result, err, errcode, sqlstate =
+        db:query("select name, description, creatorid, create_time, question_number, "
+                 .. "duration from testpapers where paperid = " .. pid)
+    if not result then
+        ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        releasedb(db)
+        return ngx.exit(500)
+    end
+
+    local final = result
+
+    result, err, errcode, sqlstate = 
+        db:query("select question from questions where paperid = " .. pid 
+                 .. "order by sequence asc");
+    if not result then
+        ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        releasedb(db)
+        return ngx.exit(500)
+    end
+
+    local total = result
+    while err == 'again' do
+        result, err, errcode, sqlstate = db:read_result()
+        if not result then
+            ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+            releasedb(db)
+            return ngx.exit(500)
+        end
+        ajoin(total, result)
+    end
+
+    final.questions = {}
+    for _,v in ipairs(total) do
+        table.insert(final.questions, v.question)
+    end
+
+    local js = require 'cjson'
+    ngx.say(js.encode(final))
+
+    releasedb(db)
+end
+
+function _S.PUT()
+    local auth = require 'lib.auth'
+
+    if not auth.pass() then
+        return ngx.exit(401)
+    end
+
+    local uid = auth.uid()
+
+    local pid = tonumber(ngx.var[1])
+
+    ngx.req.read_body()
+
+    local args, err = ngx.req.get_post_args()
+    if not args then
+        ngx.log(ngx.ERR, "error get post args: ", err)
+        return ngx.exit(500)
+    end
+
+    local name = args.name
+    local desc = args.description
+    local duration = args.duration
+
+    if not name or name:len() == 0 then
+        ngx.log(ngx.ERR, "invalid paper name: empty name")
+        return ngx.exit(500)
+    end
+
+    updatepaper(pid, name, desc, duration)
 
 end
 
-function _M.DELETE()
+function _S.DELETE()
+    local auth = require 'lib.auth'
 
+    if not auth.pass() then
+        return ngx.exit(401)
+    end
+
+    local uid = auth.uid()
+
+    local pid = tonumber(ngx.var[1])
+
+    local db = getdb()
+    if not db then return end
+
+    local result, err, errcode, sqlstate =
+        db:query("delete from testpapers where paperid = "..pid) 
+    if not result then
+        ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        releasedb(db)
+        return ngx.exit(500)
+    end
+
+    ngx.exit(200)
+    releasedb(db)
 end
 
 return _M
