@@ -1,41 +1,9 @@
 local _M = {}
 
-local function getdb()
-    local mysql = require "resty.mysql"
-    local db, err = mysql:new()
-    if not db then
-        ngx.log(ngx.ERR, "failed to instantiate mysql: ", err)
-        return
-    end
-
-    db:set_timeout(1000) -- 1 sec
-
-    local result, err, errcode, sqlstate = db:connect{
-        host = "127.0.0.1",
-        port = 3306,
-        database = "kousuan",
-        user = "kousuan",
-        password = "kousuan",
-        max_packet_size = 1024 * 1024 }
-
-    if not result then
-        ngx.log(ngx.ERR, "failed to connect: ", err, ": ", errcode, " ", sqlstate)
-        return
-    end
-
-    return db
-end
-
-local function releasedb(db)
-    -- put it into the connection pool of size 100,
-    -- with 10 seconds max idle timeout
-    local ok, err = db:set_keepalive(10000, 100)
-    if not ok then
-        ngx.log(ngx.ERR, "failed to set keepalive: ", err)
-        return
-    end
-    return true
-end
+local db = require 'lib.db'
+local getdb = db.getdb
+local releasedb = db.releasedb
+local auth = require 'lib.auth'
 
 
 -- join a2 to a1
@@ -48,7 +16,6 @@ end
 
 -- GET /testpapers
 function _M.GET()
-    local auth = require 'lib.auth'
 
     if not auth.pass() then
         return ngx.exit(401)
@@ -164,7 +131,6 @@ local function updatepaper(pid, name, desc, duration)
 end
 
 function _M.POST()
-    local auth = require 'lib.auth'
 
     if not auth.pass() then
         return ngx.exit(401)
@@ -215,7 +181,6 @@ local _S = {}
 _M.single = _S
 
 function _S.GET()
-    local auth = require 'lib.auth'
 
     if not auth.pass() then
         return ngx.exit(401)
@@ -271,7 +236,6 @@ function _S.GET()
 end
 
 function _S.PUT()
-    local auth = require 'lib.auth'
 
     if not auth.pass() then
         return ngx.exit(401)
@@ -303,7 +267,6 @@ function _S.PUT()
 end
 
 function _S.DELETE()
-    local auth = require 'lib.auth'
 
     if not auth.pass() then
         return ngx.exit(401)

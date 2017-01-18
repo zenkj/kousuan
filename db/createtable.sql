@@ -47,6 +47,15 @@ create table if not exists questions (
     question integer,
     primary key (paperid, sequence)) engine=myisam;
 
+create table if not exists qtypes (
+    qtype tinyint primary key,
+    sequence tinyint not null,
+    grade tinyint not null,
+    semester tinyint not null,
+    qtypestr varchar(10),
+    name_zh varchar(256),
+    name_en varchar(256));
+
 create table if not exists answersheets (
     sheetid integer primary key auto_increment,
     paperid integer,
