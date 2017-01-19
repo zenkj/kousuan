@@ -1,0 +1,1 @@
+mysql -ukousuan -pkousuan kousuan

@@ -194,7 +194,7 @@ for i=10,100-1 do
         -- 23. addition with carry of double-digit within 100 (x+y)
         if i+j<=100 and i%10+j%10>=10 then say(23,'x+y:8',i,j,i+j) end
 
-        -- 24. subtraction without abdication of double-digit within 100 (x-y)
+        -- 24. subtraction with abdication of double-digit within 100 (x-y)
         if i-j>=0 and i%10<j%10 then say(24,'x-y:8',i,j,i-j) end
     end 
 end
