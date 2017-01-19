@@ -4,11 +4,16 @@ local db = require 'lib.db'
 local getdb = db.getdb
 local releasedb = db.releasedb
 local auth = require 'lib.auth'
+local makeq = require('lib.init').makeq
+local makep = require('lib.init').makep
+
+local insert = table.insert
+local concat = table.concat
+local floor  = math.floor
 
 
 -- join a2 to a1
 local function ajoin(a1, a2)
-    local insert = table.insert
     for _, v in ipairs(a2) do
         insert(a1, v)
     end
@@ -28,7 +33,7 @@ function _M.GET()
 
     local result, err, errcode, sqlstate =
         db:query("select paperid, name, description, create_time, question_number, duration from testpapers "
-                 " where creatorid = " .. uid)
+                 .. " where creatorid = " .. uid)
     if not result then
         ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
         return
@@ -85,19 +90,19 @@ local function storepaper(name, desc, myid, duration, paper)
         local question = paper[i]
         local n = question
         local operand3 = n % 256
-        n = math.floor(n/256)
+        n = floor(n/256)
         local operand2 = n % 256
-        n = math.floor(n/256)
+        n = floor(n/256)
         local operand1 = n % 256
-        n = math.floor(n/256)
+        n = floor(n/256)
         local qtype = n
         local q = {paperid, i, qtype, operand1, operand2, operand3, question}
-        table.insert(qs, '('..table.concat(q, ', ')..')')
+        insert(qs, '('..concat(q, ', ')..')')
     end
 
     result, err, errcode, sqlstate = 
         db:query("insert into questions (paperid, sequence, qtype, operand1, operand2, operand3, question) "
-                 .. "values " .. table.concat(qs, ', '))
+                 .. "values " .. concat(qs, ', '))
     if not result then
         ngx.log(ngx.ERR, "band result: ", err, ": ", errcode, ": ", sqlstate, ".")
     end
@@ -137,7 +142,6 @@ function _M.POST()
     end
 
     --local js = require 'cjson'
-    local makeq = require('lib.init').makeq
 
     ngx.req.read_body()
 
@@ -165,7 +169,7 @@ function _M.POST()
         end
     end
 
-    local paper = makeq(spec, true)
+    local paper = makeq(spec)
 
     if #paper == 0 then
         ngx.log(ngx.ERR, "invalid paper spec: ", args)
@@ -226,7 +230,7 @@ function _S.GET()
 
     final.questions = {}
     for _,v in ipairs(total) do
-        table.insert(final.questions, v.question)
+        insert(final.questions, v.question)
     end
 
     local js = require 'cjson'
@@ -290,5 +294,8 @@ function _S.DELETE()
     ngx.exit(200)
     releasedb(db)
 end
+
+
+_M.makep = makep
 
 return _M

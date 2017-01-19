@@ -1,5 +1,5 @@
 -- for test
-local ngx = {['config'] = {['prefix'] = '/home/wecloud/openresty/projects/kousuan'}}
+-- local ngx = {['config'] = {['prefix'] = function() return '/home/wecloud/openresty/projects/kousuan' end}}
 --local time = os.time
 --local clock = os.clock
 --local difftime = os.difftime
@@ -15,6 +15,7 @@ local tonumber = tonumber
 local pairs = pairs
 local floor = math.floor
 local random = math.random
+local randomseed = math.randomseed
 local ascii = string.byte
 local substr = string.sub
 
@@ -75,7 +76,7 @@ end
 local questions = {}
 
 --log 'begin to load questions...'
-local qdir = ngx.config.prefix .. '/data/q/'
+local qdir = ngx.config.prefix() .. '/data/q/'
 for i=1,53 do
     questions[i] = {}
     for line in lines(qdir .. i .. '.txt') do
@@ -84,14 +85,39 @@ for i=1,53 do
 end
 --log 'finish to load questions.'
 
-local _M = {}
+local papertypes = require 'conf.papertypes'
+local qtypes = require 'lib.qtypes'
+for i,ptype in ipairs(papertypes) do
+    if i ~= ptype.sequence then
+        error('Invalid sequence of papertype #' .. i)
+    end
+    local total = 0
+    local qts = ptype.qtypes
+    local newqts = {}
+    for qt, percent in pairs(qts) do
+        local qtid = qtypes[qt]
+        if not qtid then
+            error('Invalid qtype "' .. qt .. '" in papertype #' .. i)
+        else
+            newqts[qtid] = percent
+        end
+        total = total + percent
+    end
+    if total ~= 100 then
+        error('Invalid qtypes in papertype #' .. i
+              .. ': total percentage is not 100: ' .. tatal)
+    end
+    ptype.qtypes = newqts
+end
 
-_M.hex = hex
-_M.hexstr = hexstr
-
-function _M.makeq(kv, doshuffle)
+-- make questions
+local function makeq(kv, rseed, noshuffle)
     local result = {}
+
+    if rseed then randomseed(rseed) end
+
     local r = floor(random()*180000)
+
     for k,v in pairs(kv) do
         if k > 0 and k <= #questions then
             local q = questions[k]
@@ -102,14 +128,57 @@ function _M.makeq(kv, doshuffle)
             end
         end
     end
-    if doshuffle then shuffle(result) end
+
+    if not noshuffle then shuffle(result) end
+
     return result
 end
 
+-- make test paper
+local function makep(ptype, count, rseed)
+    ngx.say(ptype, count, rseed)
+
+    local pt = papertypes[ptype]
+    if not pt then return end
+
+    ngx.say(pt.sequence)
+
+    local ks = {}
+    local vs = {}
+    local tmp = 0
+    for k,v in pairs(pt.qtypes) do
+        insert(ks, k)
+        local v1 = floor(v/100*count)
+        tmp = tmp + v1
+        insert(vs, v1)
+    end
+
+    ngx.say('tmp = ' .. tmp)
+
+    for i = 1, count-tmp do
+        local k = i % #vs + 1
+        vs[k] = vs[k] + 1
+    end
+
+    local kv = {}
+    for i=1,#ks do
+        kv[ks[i]] = vs[i]
+    end
+
+    return makeq(kv, rseed)
+end
+
 -- for test
---for i,v in ipairs(_M.makeq({[1]=10, [5]=10, [46]=10, [53]=20})) do
+--for i,v in ipairs(makeq({[1]=10, [5]=10, [46]=10, [53]=20})) do
 --    print(i,hexstr(v))
 --end
 -- for test
+
+local _M = {}
+
+_M.hex = hex
+_M.hexstr = hexstr
+_M.makeq = makeq
+_M.makep = makep
 
 return _M
