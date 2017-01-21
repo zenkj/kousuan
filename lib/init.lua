@@ -13,11 +13,11 @@ local insert = table.insert
 local concat = table.concat
 local tonumber = tonumber
 local pairs = pairs
+local ipairs = ipairs
 local floor = math.floor
 local random = math.random
 local randomseed = math.randomseed
-local ascii = string.byte
-local substr = string.sub
+local format = string.format
 
 local function shuffle(arr)
     local n = #arr
@@ -30,49 +30,6 @@ local function shuffle(arr)
     end
 end
 
-local _hexstring = '0123456789ABCDEF'
-local _hexmap = {}
-for i=1,_hexstring:len() do
-    _hexmap[ascii(_hexstring,i)] = i-1
-    _hexmap[i] = substr(_hexstring, i, i)
-end
-
-local function hexmap(str, i)
-    return _hexmap[ascii(str, i)]
-end
-
--- hex('1234') return 0x3412
--- this means the string should be little-endian
-local function hex(str, beginp, endp)
-    beginp = beginp or 1
-    endp = endp or str:len()
-    local n = endp
-    local result = 0
-    while n > beginp do
-        local h = hexmap(str, n-1)
-        local l = hexmap(str, n)
-        if not h or not l then return -1 end
-        result = result*256 + h*16 + l 
-        n = n-2
-    end
-    return result
-end
-
-local function hexstr(n)
-    local ss = {}
-    while n > 0 do
-        local r = n%256
-        local h = floor(r/16) + 1
-        local l = r%16 + 1
-        insert(ss, _hexmap[h])
-        insert(ss, _hexmap[l])
-        n = floor(n/256)
-    end
-    return concat(ss, '')
-end
-
-        
-
 local questions = {}
 
 --log 'begin to load questions...'
@@ -80,13 +37,13 @@ local qdir = ngx.config.prefix() .. '/data/q/'
 for i=1,53 do
     questions[i] = {}
     for line in lines(qdir .. i .. '.txt') do
-        insert(questions[i], tonumber(line))
+        insert(questions[i], tonumber(line, 16))
     end
 end
 --log 'finish to load questions.'
 
 local papertypes = require 'conf.papertypes'
-local qtypes = require 'lib.qtypes'
+local qtsequences = require('lib.qtypes').qtsequences
 for i,ptype in ipairs(papertypes) do
     if i ~= ptype.sequence then
         error('Invalid sequence of papertype #' .. i)
@@ -95,11 +52,11 @@ for i,ptype in ipairs(papertypes) do
     local qts = ptype.qtypes
     local newqts = {}
     for qt, percent in pairs(qts) do
-        local qtid = qtypes[qt]
-        if not qtid then
+        local qtseq = qtsequences[qt]
+        if not qtseq then
             error('Invalid qtype "' .. qt .. '" in papertype #' .. i)
         else
-            newqts[qtid] = percent
+            newqts[qtseq] = percent
         end
         total = total + percent
     end
@@ -136,12 +93,9 @@ end
 
 -- make test paper
 local function makep(ptype, count, rseed)
-    ngx.say(ptype, count, rseed)
 
     local pt = papertypes[ptype]
     if not pt then return end
-
-    ngx.say(pt.sequence)
 
     local ks = {}
     local vs = {}
@@ -152,8 +106,6 @@ local function makep(ptype, count, rseed)
         tmp = tmp + v1
         insert(vs, v1)
     end
-
-    ngx.say('tmp = ' .. tmp)
 
     for i = 1, count-tmp do
         local k = i % #vs + 1
@@ -170,14 +122,12 @@ end
 
 -- for test
 --for i,v in ipairs(makeq({[1]=10, [5]=10, [46]=10, [53]=20})) do
---    print(i,hexstr(v))
+--    print(i,format('%08X',v))
 --end
 -- for test
 
 local _M = {}
 
-_M.hex = hex
-_M.hexstr = hexstr
 _M.makeq = makeq
 _M.makep = makep
 

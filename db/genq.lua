@@ -10,21 +10,6 @@ for i=1, 53 do
     data[i] = {}
 end
 
-local function map(list, f)
-    local result = {}
-    for i, v in ipairs(list) do
-        insert(result, f(v))
-    end
-    return result
-end
-
-local h = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}
-local function hex(n)
-    local low = h[n%16+1]
-    local high = h[floor(n/16)%16+1]
-    return high..low
-end
-
 local flagmap = {
     ['x+y:1']       = 0 + 1*4,
     ['x+y:2']       = 0 + 2*4,
@@ -91,8 +76,9 @@ local flagmap = {
 -- d1: 第一个操作数
 -- d2: 第二个操作数
 -- d3: 第三个操作数，或者二操作数的结果
+local format = string.format
 local function say(fd, flag, d1, d2, d3)
-    insert(data[fd], '0x'..concat(map({flagmap[flag],d1,d2,d3}, hex), ''))
+    insert(data[fd], format('%02X%02X%02X%02X',flagmap[flag],d1,d2,d3))
 end
 
 local function shuffle(arr)
