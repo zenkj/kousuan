@@ -67,10 +67,9 @@ create table if not exists qtypes (
 --drop table answersheets;
 create table if not exists answersheets (
     sheetid integer primary key auto_increment,
-    paperid integer,
     studentid integer,
     submit_time timestamp default current_timestamp,
-    duration integer);
+    duration integer unsigned);
 
 --drop table answers;
 create table if not exists answers (
