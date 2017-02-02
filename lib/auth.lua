@@ -4,7 +4,7 @@ local uid = nil
 local sidmap = {}
 
 function _M.pass()
-    local ck = require "resty.cookie"
+    local ck = require "lib.resty.cookie"
     local cookie, err = ck:new()
     if not cookie then
         ngx.log(ngx.ERR, err)

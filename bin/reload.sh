@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PATH=$HOME/openresty/run/nginx/sbin:$PATH
+OPENRESTY_HOME=/home/jzjian/openresty/run
 dir=`dirname $0`
 dir=`cd $dir/..; pwd`
-nginx -p $dir -c conf/nginx.conf -s reload
+$OPENRESTY_HOME/nginx/sbin/nginx -p $dir -c conf/nginx.conf -s reload
