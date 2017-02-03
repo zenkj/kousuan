@@ -67,9 +67,13 @@ create table if not exists qtypes (
 --drop table answersheets;
 create table if not exists answersheets (
     sheetid integer primary key auto_increment,
+    ptype integer,
     studentid integer,
     submit_time timestamp default current_timestamp,
-    duration integer unsigned);
+    duration integer unsigned, -- total duration in 0.1-second
+    qcount integer unsigned,   -- question count
+    rcount integer unsigned    -- right answer count
+    );
 
 --drop table answers;
 create table if not exists answers (
@@ -81,4 +85,6 @@ create table if not exists answers (
     operand3 tinyint unsigned,
     answer smallint unsigned,
     duration smallint unsigned,
+    compact_question integer unsigned,
+    compact_answer integer unsigned,
     primary key (sheetid, sequence)) engine=myisam;

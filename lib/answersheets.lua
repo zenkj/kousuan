@@ -18,7 +18,8 @@ local function ajoin(a1, a2)
     end
 end    
 
--- GET /testpapers
+--[[
+-- GET /answersheets
 function _M.GET()
 
     if not auth.pass() then
@@ -54,51 +55,42 @@ function _M.GET()
 
     releasedb(db)
 end
+]]
 
-local function storepaper(name, desc, myid, duration, paper)
-
-    name = ngx.quote_sql_str(name)
-    desc = ngx.quote_sql_str(desc or '')
-    duration = ngx.quote_sql_str(tostring(duration or 0))
+local function storesheet(ptype, myid, compact_questions, compact_answers, qts, d1s, d2s, d3s, answers, durations, totalright, totalduration)
 
     local db = getdb()
     if not db then return end
 
 
     local result, err, errcode, sqlstate =
-        db:query("insert into testpapers (name, description, creatorid, question_number, duration) "
-                 .. "values ('"..name.."', '"..desc.."', "..myid..", "..#paper..", "..duration..")")
+        db:query("insert into answersheets (ptype, studentid, duration, qcount, rcount) "
+                 .. "values ('"..ptype.."', '"..myid.."', '"..totalduration.."', "..#qts..", "..totalright..")")
     if not result then
         ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        releasedb(db)
         return
     end
 
-    local paperid = result.insert_id
-    local qs = {}
-    for i=1, #paper do
-        local question = paper[i]
-        local n = question
-        local operand3 = n % 256
-        n = floor(n/256)
-        local operand2 = n % 256
-        n = floor(n/256)
-        local operand1 = n % 256
-        n = floor(n/256)
-        local qtype = n
-        local q = {paperid, i, qtype, operand1, operand2, operand3, question}
-        insert(qs, '('..concat(q, ', ')..')')
+    local sheetid = result.insert_id
+    local as = {}
+    for i=1, #qts do
+        local q = {sheetid, i, qts[i], d1s[i], d2s[i], d3s[i], answers[i], durations[i], compact_questions[i], compact_answers[i]}
+        insert(as, '('..concat(q, ', ')..')')
     end
 
     result, err, errcode, sqlstate = 
-        db:query("insert into questions (paperid, sequence, qtype, operand1, operand2, operand3, question) "
-                 .. "values " .. concat(qs, ', '))
+        db:query("insert into answers (sheetid, sequence, qtype, operand1, operand2, "
+                .. "operand3, answer, duration, compact_question, compact_answer) "
+                 .. "values " .. concat(as, ', '))
     if not result then
         ngx.log(ngx.ERR, "band result: ", err, ": ", errcode, ": ", sqlstate, ".")
+        releasedb(db)
+        return
     end
 
-    ngx.exit(200)
-
     releasedb(db)
+    return sheetid
 end
 
 
@@ -124,7 +116,7 @@ local function calc(q)
     q = floor(q/256)
     local qt = q%256
     if qt < 1 or qt > #qtypes then
-        ngx.log(ngx.ERR, "wrong question: invalid qtype")
+        ngx.log(ngx.ERR, "wrong question " .. q .. ": invalid qtype " .. qt)
         return 0xFFFF
     end
     local op1 = qt%4
@@ -144,7 +136,7 @@ local function calc(q)
     if three then
         result = arithmetic[op2](result, d3)
     elseif result ~= d3 then
-        ngx.log(ngx.ERR, "wrong question: invalid result")
+        ngx.log(ngx.ERR, "wrong question " .. q .. ": invalid result " .. d3)
         return 0xFFFF
     end
 
@@ -152,6 +144,8 @@ local function calc(q)
 end
 
 -- POST /answersheets
+-- 交卷
+-- params:
 -- {
 --   "ptype": 23,
 --   "questions": [1234, 5678],
@@ -175,17 +169,18 @@ function _M.POST()
         return ngx.exit(500)
     end
 
-
-
     local args = json.decode(data)
     if not args or type(args.ptype) ~= 'number'
-        or type(args.questions) ~= 'table'
-        or type(args.answers) ~= 'table' 
-        or #args.questions == 0
-        or #args.questions ~= #args.answers then
+       or type(args.questions) ~= 'table'
+       or type(args.answers) ~= 'table' 
+       or #args.questions == 0
+       or #args.questions ~= #args.answers then
         ngx.log(ngx.ERR, "error get post data: ", data)
         return ngx.exit(500)
     end
+
+    local compact_questions = args.questions
+    local compact_answers = args.answers
 
     local ptype = args.ptype
     local qts = {}
@@ -196,9 +191,9 @@ function _M.POST()
     local durations = {}
     local totalright = 0
     local totalduration = 0
-    for i=1, #args.questions do
-        local q = args.questions[i]
-        local a = args.answers[i]
+    for i=1, #compact_questions do
+        local q = compact_questions[i]
+        local a = compact_answers[i]
         if type(q) ~= 'number' or type(a) ~= 'number' then
             ngx.log(ngx.ERR, 'question "', q, '" or answer "', a, '" is not number')
             return ngx.exit(500)
@@ -218,7 +213,12 @@ function _M.POST()
         insert(durations, duration)
     end
 
-    storesheet(ptype, auth.uid(), qts, d1s, d2s, d3s, answers, durations)
+    local sheetid = storesheet(ptype, auth.uid(), compact_questions, compact_answers,
+                        qts, d1s, d2s, d3s, answers, durations, totalright, totalduration)
+
+    if sheetid then
+        ngx.say('{"sheetid": ' .. sheetid .. '}')
+    end
 
     return ngx.exit(200)
 end
@@ -227,7 +227,19 @@ local _S = {}
 
 _M.single = _S
 
-function _S.GET()
+-- 查卷
+-- return：
+-- {
+--   "ptype": 12,
+--   "studentid": 123,
+--   "submit_time": 12342342,
+--   "duration": 123414,
+--   "qcount": 100,
+--   "rcount": 98,
+--   "questions": [12343, 234123],
+--   "answers": [134324, 31241213]
+-- }
+function _S.GET(sheetid)
 
     if not auth.pass() then
         return ngx.exit(401)
@@ -238,22 +250,25 @@ function _S.GET()
     local db = getdb()
     if not db then return end
 
-    local pid = tonumber(ngx.var[1])
-
     local result, err, errcode, sqlstate =
-        db:query("select name, description, creatorid, create_time, question_number, "
-                 .. "duration from testpapers where paperid = " .. pid)
+        db:query("select ptype, studentid, submit_time, duration, qcount, "
+                 .. "rcount from answersheets where sheetid = " .. sheetid)
     if not result then
         ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
         releasedb(db)
         return ngx.exit(500)
     end
 
-    local final = result
+    if not result[1] or result[1].studentid ~= uid then
+        ngx.log(ngx.ERR, "invalid query from " .. uid)
+        return ngx.exit(401)
+    end
+
+    local final = result[1]
 
     result, err, errcode, sqlstate = 
-        db:query("select question from questions where paperid = " .. pid 
-                 .. "order by sequence asc");
+        db:query("select compact_question, compact_answer from answers where sheetid = "
+                  .. sheetid .. " order by sequence asc");
     if not result then
         ngx.log(ngx.ERR, "bad result: ", err, ": ", errcode, ": ", sqlstate, ".")
         releasedb(db)
@@ -272,8 +287,10 @@ function _S.GET()
     end
 
     final.questions = {}
+    final.answers = {}
     for _,v in ipairs(total) do
-        insert(final.questions, v.question)
+        insert(final.questions, v.compact_question)
+        insert(final.answers, v.compact_answer)
     end
 
     local js = require 'cjson'
