@@ -44,6 +44,24 @@ end
 
 local papertypes = require 'conf.papertypes'
 local qtsequences = require('lib.qtypes').qtsequences
+
+-- papertypemap = {
+--   ['1-1'] = {
+--     {['sequence'] = 1, ['name'] = '10以内加法'},
+--     {['sequence'] = 2, ['name'] = '10以内减法'},
+--   },
+--   ['1-2'] = {
+--     ...
+--   },
+--   ['2-1'] = {
+--     ...
+--   },
+--   ['2-2'] = {
+--     ...
+--   }
+-- }
+local papertypemap = {}
+
 for i,ptype in ipairs(papertypes) do
     if i ~= ptype.sequence then
         error('Invalid sequence of papertype #' .. i)
@@ -65,6 +83,14 @@ for i,ptype in ipairs(papertypes) do
               .. ': total percentage is not 100: ' .. tatal)
     end
     ptype.qtypes = newqts
+
+    local gs = ptype.grade .. '-' .. ptype.semester
+    local gsarray = papertypemap[gs]
+    if not gsarray then
+        gsarray = {}
+        papertypemap[gs] = gsarray
+    end
+    insert(gsarray, {['sequence'] = i, ['name'] = ptype.name})
 end
 
 -- make questions
@@ -130,5 +156,7 @@ local _M = {}
 
 _M.makeq = makeq
 _M.makep = makep
+local json = require 'cjson'
+_M.papertypes = json.encode(papertypemap)
 
 return _M
