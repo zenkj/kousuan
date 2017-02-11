@@ -1,0 +1,130 @@
+html, body {
+    overflow: hidden;
+    min-width: 320px;
+}
+
+nav {
+    margin: 0;
+    padding: 5px;
+    position: relative;
+    width: 100%;
+    height: 40px;
+    background-color: #aaa;
+}
+
+nav:after {
+    clear: both;
+}
+
+nav * {
+    margin: 0;
+}
+
+.brand {
+    margin-right: 10px;
+/*
+    margin-top: 5px;
+*/
+}
+
+.brand, .user-title {
+    float: left;
+}
+
+.user {
+    color: #594372;
+    font-weight: 800;
+}
+
+.login, .signup, .user-config, .logout {
+    float: right;
+    margin-left: 20px;
+    cursor: pointer;
+    color: red;
+}
+
+/*
+.login:hover, .signup:hover, .user-config:hover, .logout:hover {
+    color: gray;
+}
+*/
+
+nav.no-user .login, nav.no-user .signup, nav .user-config, nav .logout {
+    display: block;
+}
+
+nav .login, nav .signup, nav.no-user .user-config, nav.no-user .logout {
+    display: none;
+}
+
+#status .time-passed {
+    float: left;
+}
+
+#status .question-sequence {
+    float: right;
+}
+
+#question-body {
+    position: absolute;
+    top: 40px;
+    bottom: 55px;
+    left: 0;
+    width: 100%;
+    height: auto;
+    min-width: 320px;
+    overflow: hidden;
+}
+
+.question-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+}
+
+
+.input-container {
+    position: absolute;
+    top: 300px;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    width: 100%;
+}
+
+/* Dialog Begin */
+
+.error-message {
+    color: red;
+    display: none;
+}
+
+#to-signup, #to-login {
+    color: red;
+    /*font-size: 20px;*/
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* Dialog End */
+
+/* Debug Begin */
+#debug-log {
+    position: absolute;
+    width: 100%;
+    height: 40%;
+    bottom: 0;
+    overflow: scroll;
+    border: red solid 1px;
+    display: none;
+}
+
+#clear-log {
+    display: none;
+}
+
+/* Debug End */
+

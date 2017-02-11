@@ -7,140 +7,62 @@
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{title}}</title>
     <link rel="stylesheet" href="/stylesheets/bootstrap.css"/>
-    <link rel="stylesheet" href="/stylesheets/mrqd.css" />
+    <link rel="stylesheet" href="/stylesheets/kousuan.css" />
     <script src="/javascripts/jquery.js"></script>
     <script src="/javascripts/hammer.js"></script>
     <script src="/javascripts/bootstrap.js"></script>
     <script src="/javascripts/txpinyin-20848.js"></script>
-    <script src="/javascripts/mrqd.js"></script>
+    <script src="/javascripts/kousuan.js"></script>
   </head>
 
-<%
-    function sameYear(d1, d2) {
-        return d1.getFullYear() == d2.getFullYear();
-    }
-
-    function sameMonth(d1, d2) {
-        return sameYear(d1, d2) && d1.getMonth() == d2.getMonth();
-    }
-
-    function sameDay(d1, d2) {
-        return sameMonth(d1, d2) && d1.getDate() == d2.getDate();
-    }
-%>
-
   <body>
-    <% if (user.id < 0) { %>
-    <nav class="no-user">
-    <% } else { %>
     <nav>
-    <% } %>
-      <img class="brand" src="/images/checkin-blue.png" alt="每日签到"></img>
-      <p class="user-title"><span class="user"><%= user.name %></span>的签到</p>
+        <p class="user-title">{{title}}</p>
+        <!--
       <a class="login" data-toggle="modal" data-target="#dialog-login">登录</a>
       <a class="signup" data-toggle="modal" data-target="#dialog-signup">免费注册</a>
       <a class="user-config" data-toggle="modal" data-target="#dialog-user-config">配置</a>
       <a class="logout" id="button-logout">退出</a>
+      -->
     </nav>
 
-
-    <div id="checkin-body">
-      <div class="container checkin-header">
-        <div class="row">
-          <div class="col-xs-offset-3 col-xs-6 col-md-offset-4 col-md-4"> 
-            <h3 class="year-month"><span class="current-year"><%= date.getFullYear() %></span>年<span class="current-month"><%= date.getMonth()+1 %></span>月</h3>
-          </div>
-          <div class="col-xs-3 col-md-4">
-            <button class="btn btn-default return-today">回今天</button>
-          </div>
-        </div>
-      </div>
-      <div class="checkin-container">
-        <table class="checkin-table">
-          <tr>
-            <% for (var i=0; i<3; i++) { %>
-            <th>周一</th><th>周二</th><th>周三</th><th>周四</th>
-            <th>周五</th><th>周六</th><th>周日</th>
-            <% } %>
-          </tr>
-          <% var time = date.getTime();
-             var dates = [new Date(time), new Date(time), new Date(time)];
-             var months = [];
-             var today = new Date();
-             dates.forEach(function(d, i) {
-                 d.setMonth(d.getMonth()+i-1);
-                 d.setDate(1);
-                 months[i] = d.getMonth();
-                 var day = d.getDay() - 1;
-                 day = day < 0 ? day + 7 : day;
-                 d.setDate(d.getDate() - day);
-             });
-             for (var i=0; i<6; i++) {
-          %>
-          <tr>
-            <% for (var j=0; j<3; j++) {
-                 for (var k=0; k<7; k++) {
-                   var currMonth = dates[j].getMonth() == months[j] ? " in-current-month" : "";
-                   var isToday = sameDay(dates[j], today) ? " is-today" : "";
-            %>
-            <td class="checkin-cell<%= currMonth%><%= isToday%>">
-                <%= dates[j].getDate() %>
-            </td>
-            <%     dates[j].setDate(dates[j].getDate()+1);
-                 }
-               }
-            %>
-          </tr>
-          <% } %>
-        </table>
-      </div>
-      <div class="active-habit-container">
-          <ul id="active-habit-list" class="list-group">
-          </ul>
-      </div>
-    </div> <!-- .checkin-body -->
-
-    <div id="manage-body">
-      <div class="container manage-header">
-        <div class="row">
-          <div class="col-xs-9 col-md-8"> 
-            <div class="form-group search-habit">
-              <label class="sr-only" for="search-habit-text">搜索习惯</label>
-              <div class="input-group">
-                <div class="input-group-addon" aria-hidden="true">
-                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-                </div>
-                <input type="text" class="form-control" id="search-habit-text" placeholder="搜索习惯">
-              </div>
-            </div>
-          </div>
-          <div class="col-xs-3 col-md-4">
-            <p id="habit-summary"><span id="active-habit-count"></span>个启用<br/><span id="inactive-habit-count"></span>个未启用</p>
-          </div>
-        </div>
-      </div>
-      <div class="habit-container">
-        <ul id="all-habit-list" class="list-group"></ul>
-      </div>
-    </div> <!-- .manage-body -->
-
-
-    <div id="toolbar" class="container">
-      <div class="row">
-        <div class="col-xs-offset-4 col-xs-4">
-          <button class="btn btn-primary" data-toggle="modal" data-target="#dialog-new-habit">新建</button>
-        </div>
-        <div class="col-xs-4">
-          <button id="button-manage-habits" class="btn btn-default">管理</button>
-        </div>
-        <div class="col-xs-4">
-          <button id="button-checkin" class="btn btn-default">签到</button>
-        </div>
-        <div class="col-xs-4">
-          <button id="clear-log" class="btn">清除调试日志</button>
-        </div>
-      </div>
+    <div id="status">
+        <p class="time-passed"></p>
+        <p class="question-sequence"></p>
     </div>
+
+
+    <div id="question-body">
+      <div class="question-container">
+        <p class="expression"></p>
+        <p class="equal-sign">=</p>
+        <p class="answer"></p>
+      </div>
+      <div class="input-container">
+        <div class="btn-group" role="group" aria-label="input button">
+          <button type="button" class="btn btn-primary">1</button>
+          <button type="button" class="btn btn-primary">2</button>
+          <button type="button" class="btn btn-primary">3</button>
+          <button type="button" class="btn btn-danger">
+            <span class="glyphicon glyphion-remove" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="btn-group" role="group" aria-label="input button">
+          <button type="button" class="btn btn-primary">4</button>
+          <button type="button" class="btn btn-primary">5</button>
+          <button type="button" class="btn btn-primary">6</button>
+          <button type="button" class="btn btn-primary">0</button>
+        </div>
+        <div class="btn-group" role="group" aria-label="input button">
+          <button type="button" class="btn btn-primary">7</button>
+          <button type="button" class="btn btn-primary">8</button>
+          <button type="button" class="btn btn-primary">9</button>
+          <button type="button" class="btn btn-success">
+            <span class="glyphicon glyphion-remove" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </div> <!-- .question-body -->
 
 
     <div id="debug-log">
