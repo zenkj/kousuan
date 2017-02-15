@@ -85,6 +85,18 @@ nav .login, nav .signup, nav.no-user .user-config, nav.no-user .logout {
     overflow: hidden;
 }
 
+#question-sources {
+    display: none;
+}
+
+.expression {
+}
+
+.equal-sign {
+}
+
+.answer {
+}
 
 .input-container {
     position: absolute;

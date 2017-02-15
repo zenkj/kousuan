@@ -27,13 +27,14 @@
     </nav>
 
     <div id="status">
-        <p class="time-passed"></p>
-        <p class="question-sequence"></p>
+        <p class="time-passed">00:00</p>
+        <p class="question-sequence">1/{{qnum}}</p>
     </div>
 
 
     <div id="question-body">
       <div class="question-container">
+        <p id="question-sources">{{questions}}</p>
         <p class="expression"></p>
         <p class="equal-sign">=</p>
         <p class="answer"></p>
