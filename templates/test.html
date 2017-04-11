@@ -9,9 +9,7 @@
     <link rel="stylesheet" href="/stylesheets/bootstrap.css"/>
     <link rel="stylesheet" href="/stylesheets/kousuan.css" />
     <script src="/javascripts/jquery.js"></script>
-    <script src="/javascripts/hammer.js"></script>
     <script src="/javascripts/bootstrap.js"></script>
-    <script src="/javascripts/txpinyin-20848.js"></script>
     <script src="/javascripts/kousuan.js"></script>
   </head>
 
@@ -39,32 +37,30 @@
         <p class="equal-sign">=</p>
         <p class="answer"></p>
       </div>
-      <div class="input-container">
-        <div class="btn-group" role="group" aria-label="input button">
-          <button type="button" class="btn btn-primary">1</button>
-          <button type="button" class="btn btn-primary">2</button>
-          <button type="button" class="btn btn-primary">3</button>
+      <div class="input-container container">
+        <div class="row">
+          <div class="col-xs-3">1</div>
+          <div class="col-xs-3">2</div>
+          <div class="col-xs-3">3</div>
+          <div class="col-xs-3">
+            <span class="glyphicon glyphicon-remove"></span>
+          </div>
         </div>
-        <div class="btn-group" role="group" aria-label="input button">
-          <button type="button" class="btn btn-primary">4</button>
-          <button type="button" class="btn btn-primary">5</button>
-          <button type="button" class="btn btn-primary">6</button>
+        <div class="row">
+          <div class="col-xs-3">4</div>
+          <div class="col-xs-3">5</div>
+          <div class="col-xs-3">6</div>
+          <div class="col-xs-3">0</div>
         </div>
-        <div class="btn-group" role="group" aria-label="input button">
-          <button type="button" class="btn btn-primary">7</button>
-          <button type="button" class="btn btn-primary">8</button>
-          <button type="button" class="btn btn-primary">9</button>
+        <div class="row">
+          <div class="col-xs-3">7</div>
+          <div class="col-xs-3">8</div>
+          <div class="col-xs-3">9</div>
+          <div class="col-xs-3">
+            <span class="glyphicon glyphicon-ok"></span>
+          </div>
         </div>
-        <div class="btn-group" role="group" aria-label="input button">
-          <button type="button" class="btn btn-danger">
-            <span class="glyphicon glyphion-remove" aria-hidden="true"></span>
-          </button>
-          <button type="button" class="btn btn-primary">0</button>
-          <button type="button" class="btn btn-success">
-            <span class="glyphicon glyphion-remove" aria-hidden="true"></span>
-          </button>
-        </div>
-      </div>
+      </div> <!-- .input-container -->
     </div> <!-- .question-body -->
 
 
@@ -89,277 +85,7 @@
         </div>
       </div>
     </div>
-
-
-    <!-- 对话框：确认 -->
-    <div class="modal fade" id="dialog-confirm" tabindex="-1" role="dialog" aria-labelledby="dialog-confirm-title">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
-            <h2 class="modal-title" id="dialog-confirm-title">确认</h2>
-          </div>
-          <div class="modal-body">
-            <p id="dialog-confirm-message">确认信息</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" id="button-confirm">确认</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- 对话框：登录 -->
-    <div class="modal fade" id="dialog-login" tabindex="-1" role="dialog" aria-labelledby="dialog-login-title">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
-            <h2 class="modal-title" id="dialog-login-title">登录</h2>
-          </div>
-          <div class="modal-body">
-            <p class="error-message"></p>
-            <div class="form-group">
-              <label class="control-label" for="login-user">邮箱 或 手机号</label>
-              <input type="text" class="form-control" id="login-user" placeholder="邮箱或手机号" aria-describedby="login-user-desc">
-              <span id="login-user-desc" class="sr-only">请输入合法的邮箱名字或手机号码</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="login-password">密码</label>
-              <input type="password" class="form-control" id="login-password" placeholder="密码" aria-describedby="login-password-desc">
-              <span id="login-password-desc" class="sr-only">密码必须6位或6位以上</span>
-            </div>
-            <p>没有账号？<a id="to-signup">免费注册</a></p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" id="button-login">登录</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- 对话框：注册 -->
-    <div class="modal fade" id="dialog-signup" tabindex="-1" role="dialog" aria-labelledby="dialog-signup-title">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
-            <h2 class="modal-title" id="dialog-login-title">注册</h2>
-          </div>
-          <div class="modal-body">
-            <p class="error-message"></p>
-            <div class="form-group">
-              <label class="control-label" for="signup-name">名字</label>
-              <input type="text" class="form-control" id="signup-name" placeholder="名字" aria-describedby="signup-name-desc">
-              <span id="signup-name-desc" class="sr-only">请输入用户名，登录后展示在页面上</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="signup-phone">手机号</label>
-              <input type="text" class="form-control" id="signup-phone" placeholder="手机号" aria-describedby="signup-phone-desc">
-              <span id="signup-phone-desc" class="sr-only">请输入合法的手机号码，11位阿拉伯数字</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="signup-email">邮箱</label>
-              <input type="email" class="form-control" id="signup-email" placeholder="邮箱" aria-describedby="signup-email-desc">
-              <span id="signup-email-desc" class="sr-only">请输入合法的邮箱</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="signup-password">密码</label>
-              <input type="password" class="form-control" id="signup-password" placeholder="密码" aria-describedby="signup-password-desc">
-              <span id="signup-password-desc" class="sr-only">请输入密码，最少6位</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="signup-password-again">重复密码</label>
-              <input type="password" class="form-control" id="signup-password-again" placeholder="重复密码" aria-describedby="signup-password-desc">
-              <span id="signup-password-desc" class="sr-only">请重复输入密码，与上一个输入相同</span>
-            </div>
-            <p>已有账号？<a id="to-login">登录</a></p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" id="button-signup">注册</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- 对话框：创建新习惯 -->
-    <div class="modal fade" id="dialog-new-habit" tabindex="-1" role="dialog" aria-labelledby="dialog-new-habit-title">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
-            <h2 class="modal-title" id="dialog-new-habit-title">创建新习惯</h2>
-          </div>
-          <div class="modal-body">
-            <p class="error-message"></p>
-            <div class="form-group">
-              <label class="control-label" for="new-habit-name">名字</label>
-              <input type="text" class="form-control" id="new-habit-name" placeholder="新习惯名字" aria-describedby="new-habit-name-desc">
-              <span id="new-habit-name-desc" class="sr-only">请输入新习惯名字</span>
-            </div>
-            <ul class="list-inline" id="new-habit-workdays">
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="1" checked>
-                  周一
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="2" checked>
-                  周二
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="3" checked>
-                  周三
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="4" checked>
-                  周四
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="5" checked>
-                  周五
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="6">
-                  周六
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="7">
-                  周日
-                </label>
-              </li>
-            </ul>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" id="button-new-habit">创建</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- 对话框：修改习惯 -->
-    <div class="modal fade" id="dialog-change-habit" tabindex="-1" role="dialog" aria-labelledby="dialog-change-habit-title">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
-            <h2 class="modal-title" id="dialog-change-habit-title">修改习惯</h2>
-          </div>
-          <div class="modal-body">
-            <p class="error-message"></p>
-            <div class="form-group">
-              <label class="control-label" for="change-habit-name">名字</label>
-              <input type="text" class="form-control" id="change-habit-name" placeholder="习惯名字" aria-describedby="change-habit-name-desc">
-              <span id="change-habit-name-desc" class="sr-only">修改习惯名字</span>
-            </div>
-            <ul class="list-inline" id="change-habit-workdays">
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="1" checked>
-                  周一
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="2" checked>
-                  周二
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="3" checked>
-                  周三
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="4" checked>
-                  周四
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="5" checked>
-                  周五
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="6">
-                  周六
-                </label>
-              </li>
-              <li class="checkbox">
-                <label>
-                  <input type="checkbox" value="7">
-                  周日
-                </label>
-              </li>
-            </ul>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" id="button-change-habit">保存</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- 对话框：修改配置 -->
-    <div class="modal fade" id="dialog-user-config" tabindex="-1" role="dialog" aria-labelledby="dialog-user-config-title">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
-            <h2 class="modal-title" id="dialog-user-config-title">修改配置</h2>
-          </div>
-          <div class="modal-body">
-            <p class="error-message"></p>
-            <div class="form-group">
-              <label class="control-label" for="signup-name">名字</label>
-              <input type="text" class="form-control" id="user-config-name" placeholder="名字" aria-describedby="signup-name-desc">
-              <span id="signup-name-desc" class="sr-only">请输入用户名，登录后展示在页面上</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="signup-phone">手机号</label>
-              <input type="text" class="form-control" id="user-config-phone" placeholder="手机号" aria-describedby="signup-phone-desc">
-              <span id="signup-phone-desc" class="sr-only">请输入合法的手机号码，11位阿拉伯数字</span>
-            </div>
-            <div class="form-group">
-              <label class="control-label" for="signup-email">邮箱</label>
-              <input type="email" class="form-control" id="user-config-email" placeholder="邮箱" aria-describedby="signup-email-desc">
-              <span id="signup-email-desc" class="sr-only">请输入合法的邮箱</span>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-            <button type="button" class="btn btn-primary" id="button-user-config">保存</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <!-- 对话框：显示信息 end-->
 
   </body>
 </html>
