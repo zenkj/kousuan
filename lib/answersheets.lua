@@ -115,10 +115,7 @@ local function calc(q)
     local d1 = q%256
     q = floor(q/256)
     local qt = q%256
-    if qt < 1 or qt > #qtypes then
-        ngx.log(ngx.ERR, "wrong question " .. q .. ": invalid qtype " .. qt)
-        return 0xFFFF
-    end
+
     local op1 = qt%4
     local op2, three
     if qt >= 128 then
@@ -130,11 +127,11 @@ local function calc(q)
         d3 = d3 * 10
     end
 
-    local result = arithmetic[op1](d1, d2)
+    local result = arithmetic[op1+1](d1, d2)
     if result == 0xFFFF then return result end
 
     if three then
-        result = arithmetic[op2](result, d3)
+        result = arithmetic[op2+1](result, d3)
     elseif result ~= d3 then
         ngx.log(ngx.ERR, "wrong question " .. q .. ": invalid result " .. d3)
         return 0xFFFF

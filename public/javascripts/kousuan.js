@@ -40,12 +40,43 @@ $(document).ready(function() {
 
     
     //------------ 更新题目 --------------
+    var ops = ['+', '-', '*', '/']
+    function qexpression(q) {
+        var d3 = q%256;
+        q = Math.floor(q/256);
+        var d2 = q%256;
+        q = Math.floor(q/256);
+        var d1 = q%256;
+        q = Math.floor(q/256);
+        var qt = q%256;
+
+        var op1 = qt%4;
+        var op2, three
+        if (qt >= 128) {
+            op2 = Math.floor(qt/4)%4;
+            three = true;
+        } else if (qt >= 64) {
+            d1 = d1 * 10;
+            d2 = d2 * 10;
+            d3 = d3 * 10;
+        }
+
+        var exp = '' + d1 + ops[op1] + d2;
+        if (three) {
+            exp = exp + ops[op2] + d3;
+        }
+
+        return exp;
+    }
+
     function updateQuestion() {
         var qnum = allQuestions.length;
         if (currq < 0 || currq >= qnum) 
             return;
         $('.question-sequence').text('' + currq + '/' + qnum);
         var q = allQuestions[currq];
-        
+        $('.expression').text(qexpression(q));
     }
+
+    // ----------------
 });
