@@ -30,8 +30,15 @@
     </div>
 
 
+    <div id="result-body">
+        <table>
+            <th>
+            <th>
+        </table>
+    </div>
     <div id="question-body">
       <div class="question-container">
+        <p id="paper-type">{{ptype}}</p>
         <p id="question-sources">{{questions}}</p>
         <p class="expression"></p>
         <p class="equal-sign">=</p>
@@ -39,24 +46,24 @@
       </div>
       <div class="input-container container">
         <div class="row">
-          <div class="col-xs-3">1</div>
-          <div class="col-xs-3">2</div>
-          <div class="col-xs-3">3</div>
-          <div class="col-xs-3">
+          <div id="input1" class="col-xs-3">1</div>
+          <div id="input2" class="col-xs-3">2</div>
+          <div id="input3" class="col-xs-3">3</div>
+          <div id="input-1" class="col-xs-3"> <!-- -1 -->
             <span class="glyphicon glyphicon-remove"></span>
           </div>
         </div>
         <div class="row">
-          <div class="col-xs-3">4</div>
-          <div class="col-xs-3">5</div>
-          <div class="col-xs-3">6</div>
-          <div class="col-xs-3">0</div>
+          <div id="input4" class="col-xs-3">4</div>
+          <div id="input5" class="col-xs-3">5</div>
+          <div id="input6" class="col-xs-3">6</div>
+          <div id="input0" class="col-xs-3">0</div>
         </div>
         <div class="row">
-          <div class="col-xs-3">7</div>
-          <div class="col-xs-3">8</div>
-          <div class="col-xs-3">9</div>
-          <div class="col-xs-3">
+          <div id="input7" class="col-xs-3">7</div>
+          <div id="input8" class="col-xs-3">8</div>
+          <div id="input9" class="col-xs-3">9</div>
+          <div id="input10" class="col-xs-3"> <!-- 10 -->
             <span class="glyphicon glyphicon-ok"></span>
           </div>
         </div>
