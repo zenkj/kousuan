@@ -131,6 +131,7 @@ local function calc(q)
     if result == 0xFFFF then return result end
 
     if three then
+        -- TODO 逻辑错误，如果第二个运算是乘除，第一个运算是加减，则应先算乘除
         result = arithmetic[op2+1](result, d3)
     elseif result ~= d3 then
         ngx.log(ngx.ERR, "wrong question " .. q .. ": invalid result " .. d3)
